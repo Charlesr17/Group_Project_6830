@@ -19,10 +19,11 @@ ui <- fluidPage(
         label = "Choose plots to display:",
         choices = c(
           "Sale Price",
-          "Garage Area vs Price",
+          "Living Area vs Price",
           "Overall Quality",
           "Neighborhood",
-          "Garage Size"
+          "Garage Size",
+          "Bedrooms vs Price"
         )
       ),
       
@@ -92,6 +93,11 @@ server <- function(input, output) {
       data <- data[data$HouseStyle == "2Story", ]
     }
     
+    if (nrow(data) == 0) {
+      plot.new()
+      text(0.5, 0.5, "No homes match the selected filters.")
+      return()
+    }
     
     #-------- handling which plot to draw:--------
     
@@ -102,12 +108,12 @@ server <- function(input, output) {
         scale_y_continuous(labels = comma) +
         theme_minimal() +
         labs(
-          title = "Sale Price Distribution",
+          title = "Distribution of Sale Prices",
           x = "Sale Price",
-          y = "Count"
+          y = "Number of Homes"
         )
       
-    } else if (input$plots == "Garage Area vs Price") {
+    } else if (input$plots == "Living Area vs Price") {
       
       ggplot(data, aes(x = GrLivArea, y = SalePrice)) +
         geom_point(alpha = 0.5, color = "darkgreen") +
@@ -140,25 +146,35 @@ server <- function(input, output) {
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
         labs(
-          title = "Neighborhood vs Sale Price",
+          title = "Sale Price by Neighborhood",
           x = "Neighborhood",
           y = "Sale Price"
         )
       
     } else if (input$plots == "Garage Size") {
       
-      ggplot(data, aes(x = GarageArea, y = SalePrice)) +
-        geom_point(alpha = 0.5, color = "blue") +
-        scale_x_continuous(labels = comma) +
+      ggplot(data, aes(x = factor(GarageCars), y = SalePrice)) +
+        geom_boxplot(fill = "plum") +
         scale_y_continuous(labels = comma) +
         theme_minimal() +
         labs(
-          title = "Garage Area vs Sale Price",
-          x = "Garage Area",
+          title = "Garage Size vs Sale Price",
+          x = "Garage Size",
+          y = "Sale Price"
+        )
+      
+    } else if (input$plots == "Bedrooms vs Price") {
+      
+      ggplot(data, aes(x = factor(BedroomAbvGr), y = SalePrice)) +
+        geom_boxplot(fill = "lightblue") +
+        scale_y_continuous(labels = comma) +
+        theme_minimal() +
+        labs(
+          title = "Bedrooms vs Sale Price",
+          x = "Number of Bedrooms",
           y = "Sale Price"
         )
     }
   })
 }
-
 shinyApp(ui, server)
